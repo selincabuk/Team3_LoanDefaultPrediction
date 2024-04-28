@@ -8,13 +8,6 @@ def read_the_data_file(dataset_file):
 
 
 def main():
-     frame = read_the_data_file('Dataset\Data_Train.csv')
-
-
-
-
-
-def main():
     
     frame = read_the_data_file('Dataset/Data_Train.csv')
 
