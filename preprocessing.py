@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.impute import KNNImputer
 from sklearn.preprocessing import StandardScaler
 
+
 def read_data_file(dataset_file):
     df = pd.read_csv(dataset_file)
     return df
@@ -164,6 +165,18 @@ def data_preprocessing(df):
     plt.ylabel('Number of Account Openings')
     plt.savefig('account_openings.png')
     plt.close()
+
+
+def missing_values_info(data):
+    for column in data.columns:
+        missing = data[column].isna().sum()
+        portion = (missing / data.shape[0]) * 100
+        print(f"'{column}': number of missing values '{missing}' ==> '{portion:.3f}%'")
+
+
+
+    
+
     
 def main():
     # Reading the dataset file
@@ -177,9 +190,11 @@ def main():
     print("\nSize of the dataset:")
     print(frame.shape)
     print("\n")
-    
+    print(frame.describe)
     # Applying data preprocessing steps
     cleaned_data = data_preprocessing(frame)
+    
+    
 
 if __name__ == "__main__":
     main()

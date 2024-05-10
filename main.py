@@ -1,22 +1,19 @@
 import pandas as pd
-import numpy as np
-import seaborn as sns
 
-def read_the_data_file(dataset_file):
-    df = pd.read_csv(dataset_file)
-    return df
+def count_null_values(df):
+    # Her sütundaki null değerlerin sayısını hesapla
+    null_counts = df.isnull().sum()
 
+    # Her sütunun adını ve karşılık gelen null değer sayısını yazdır
+    for column, null_count in null_counts.items():
+        print(f"{column}: {null_count} null values")
 
 def main():
-    
-    frame = read_the_data_file('Dataset/Data_Train.csv')
+    # Veri setini oku
+    frame = pd.read_csv('Dataset/Data_Train.csv')
 
-    print("The first 5 row of the dataset:")
-    print(frame.head())
-
-    
-    print("\nThe size of the dataset:")
-    print(frame.shape)
+    # Null değerlerin sayısını belirle
+    count_null_values(frame)
 
 if __name__ == "__main__":
     main()
