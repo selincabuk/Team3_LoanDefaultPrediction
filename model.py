@@ -7,16 +7,13 @@ import joblib
 from preprocessing import read_data_file, fill_missing_values, feature_engineering, clean_designation, visualize_data, missing_values_info
 
 def check_infinite_values(df):
-    # Very large values are detected and changed to NaN. These NaN values are then removed from the dataset.
     return df.replace([np.inf, -np.inf], np.nan).dropna()
 
 def main():
     try:
-       
         frame = read_data_file('Dataset/Data_Train.csv')
         print("Data loaded successfully.")
-        
-       
+
         print("First five rows of the dataset:")
         print(frame.head())
         print("\nSize of the dataset:")
@@ -24,11 +21,9 @@ def main():
         print("\n")
         print(frame.describe())
 
-       
         print("Missing values information:")
         missing_values_info(frame)
 
-        
         print("\nFilling missing values...")
         frame = fill_missing_values(frame)
         print("Missing values filled.")
@@ -41,26 +36,22 @@ def main():
         frame = clean_designation(frame)
         print("Designations cleaned.")
 
-        
         print("\nVisualizing data...")
         visualize_data(frame)
         print("Data visualization completed.")
 
-        
         print("\nConverting categorical variables to numerical values...")
         frame = pd.get_dummies(frame)
         print("Conversion completed.")
 
-        
         print("\nChecking for infinite or very large values...")
         frame = check_infinite_values(frame)
         print("Check completed.")
 
-        #Separate target and features
-        target = 'Default'  
+        target = 'Default'
         if target not in frame.columns:
             raise ValueError(f"Target column '{target}' not found in the dataset.")
-        
+
         features = frame.drop(columns=[target])
         labels = frame[target]
 
@@ -77,7 +68,6 @@ def main():
         y_pred = model.predict(X_test)
         print("Predictions completed.")
 
-        
         print("\nEvaluating the model...")
         print("Accuracy:", accuracy_score(y_test, y_pred))
         print("Confusion Matrix:")
@@ -85,10 +75,13 @@ def main():
         print("Classification Report:")
         print(classification_report(y_test, y_pred))
 
-        
         joblib.dump(model, 'loan_default_model.pkl')
         print("Model saved as 'loan_default_model.pkl'")
-        
+
+        model_features = list(features.columns)
+        joblib.dump(model_features, 'model_features.pkl')
+        print("Model features saved as 'model_features.pkl'")
+
     except Exception as e:
         print(f"An error occurred: {e}")
 
