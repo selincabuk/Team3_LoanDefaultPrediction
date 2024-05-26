@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.impute import KNNImputer
 from sklearn.preprocessing import StandardScaler
 import plotly.express as px
+import re
 
 
 def read_data_file(dataset_file):
@@ -72,7 +73,8 @@ def visualize_data(df):
 
     # Correlation Matrix
     plt.figure(figsize=(12, 10))
-    corr_matrix = df.corr()
+    numeric_df = df.select_dtypes(include=['number'])
+    corr_matrix = numeric_df.corr()
     sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', linewidths=0.5)
     plt.title('Correlation Matrix')
     plt.savefig('correlation_matrix.png')
@@ -101,6 +103,69 @@ def clean_designation(df):
 
     return df
 
+
+def transform_GGGrade(df):
+    roman_to_int = {
+    'I': 1,
+    'II': 2,
+    'III': 3,
+    'IV': 4,
+    'V': 5,
+    'VI': 6
+    }
+    df['GGGrade'] = df['GGGrade'].map(roman_to_int)
+
+    return df
+
+
+def preprocess_experience_helper(value):
+    # Handle '>' and '<' cases
+    if '>' in value:
+        return int(re.findall(r'\d+', value)[0]) + 1
+    elif '<' in value:
+        return 0  # Assuming '<1yr' means less than 1 year, we can consider it as 0
+    else:
+        # Extract numeric part from the string
+        nums = re.findall(r'\d+', value)
+        if nums:
+            return int(nums[0])
+        else:
+            return 0  # In case there's no numeric part, default to 0
+
+
+def transform_Experience(df):
+    df['Experience'] = df['Experience'].apply(preprocess_experience_helper)
+
+    return df
+
+
+def transform_Validation(df):
+    status_mapping = {
+    'Vfied': 1,
+    'Source Verified': 1, # these are both verified so they get the same value
+    'Not Vfied': 0
+    }
+
+    df['Validation'] = df['Validation'].map(status_mapping)
+
+    return df
+
+
+def transform_Home_Status(df):
+    # Apply one-hot encoding
+    df = pd.get_dummies(df, columns=['Home_Status'], prefix='', prefix_sep='')
+
+    return df
+
+def remove_Designation(df):
+    df = df.drop(columns=['Designation'])
+
+    return df
+
+def remove_File_Status(df):
+    df = df.drop(columns=['File_Status'])
+
+    return df
 
 def fill_missing_values(df):
     df['Designation'] = df['Designation'].fillna('N/A')
@@ -138,10 +203,28 @@ def main():
     print(frame.describe())
 
     missing_values_info(frame)
+
+    print("Experience column unique values:")
+    print(frame['Experience'].unique())
+
+    print("Validation column unique values:")
+    print(frame['Validation'].unique())
+
+    print("Home status column unique values:")
+    print(frame['Home_Status'].unique())
+
+    print("Designation column unique values:")
+    print(frame['Designation'].unique().size)
     
     frame = fill_missing_values(frame)
     frame = feature_engineering(frame)
     frame = clean_designation(frame)
+    frame = transform_GGGrade(frame)
+    frame = transform_Experience(frame)
+    frame = transform_Validation(frame)
+    frame = transform_Home_Status(frame)
+    frame = remove_Designation(frame)
+    frame = remove_File_Status(frame)
 
     visualize_data(frame)
 
