@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import joblib
-from preprocessing import read_data_file, fill_missing_values, feature_engineering, clean_designation
+from preprocessing import read_data_file, fill_missing_values, feature_engineering, clean_designation, process_features
 from model import check_infinite_values
 
 def main():
@@ -32,9 +32,24 @@ def main():
         new_data = clean_designation(new_data)
         print("Designations cleaned.")
 
-        print("\nConverting categorical variables to numerical values in new data...")
-        new_data = pd.get_dummies(new_data)
-        print("Conversion completed.")
+        print("\nProcessing features...")
+        new_data = process_features(new_data)
+        print("Features processed.")
+
+        print("\nHandling categorical variables in new data...")
+        categorical_columns = new_data.select_dtypes(include=['object']).columns
+        for col in categorical_columns:
+            num_unique = new_data[col].nunique()
+            print(f"Column '{col}' has {num_unique} unique values")
+            if num_unique > 100:  # Threshold for high-cardinality columns
+                print(f"Using frequency encoding for column '{col}'")
+                # Frequency encoding
+                freq_encoding = new_data[col].value_counts().to_dict()
+                new_data[col] = new_data[col].map(freq_encoding)
+            else:
+                print(f"Using one-hot encoding for column '{col}'")
+                # One-hot encoding
+                new_data = pd.get_dummies(new_data, columns=[col])
 
         print("\nChecking for infinite or very large values in new data...")
         new_data = check_infinite_values(new_data)

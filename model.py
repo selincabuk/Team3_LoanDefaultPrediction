@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 import joblib
-from preprocessing import read_data_file, fill_missing_values, feature_engineering, clean_designation, visualize_data, missing_values_info, transform_GGGrade
+from preprocessing import read_data_file, fill_missing_values, feature_engineering, clean_designation, visualize_data, missing_values_info, process_features
 
 def check_infinite_values(df):
     return df.replace([np.inf, -np.inf], np.nan).dropna()
@@ -36,13 +36,28 @@ def main():
         frame = clean_designation(frame)
         print("Designations cleaned.")
 
+        print("\nProcessing features...")
+        frame = process_features(frame)
+        print("Features processed.")
+
         print("\nVisualizing data...")
         visualize_data(frame)
         print("Data visualization completed.")
 
-        print("\nConverting categorical variables to numerical values...")
-        frame = pd.get_dummies(frame)
-        print("Conversion completed.")
+        print("\nHandling categorical variables in new data...")
+        categorical_columns = frame.select_dtypes(include=['object']).columns
+        for col in categorical_columns:
+            num_unique = frame[col].nunique()
+            print(f"Column '{col}' has {num_unique} unique values")
+            if num_unique > 100:  # Threshold for high-cardinality columns
+                print(f"Using frequency encoding for column '{col}'")
+                # Frequency encoding
+                freq_encoding = frame[col].value_counts().to_dict()
+                frame[col] = frame[col].map(freq_encoding)
+            else:
+                print(f"Using one-hot encoding for column '{col}'")
+                # One-hot encoding
+                frame = pd.get_dummies(frame, columns=[col])
 
         print("\nChecking for infinite or very large values...")
         frame = check_infinite_values(frame)

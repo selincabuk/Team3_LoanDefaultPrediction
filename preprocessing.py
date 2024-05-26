@@ -189,6 +189,16 @@ def missing_values_info(data):
         missing = data[column].isna().sum()
         portion = (missing / data.shape[0]) * 100
         print(f"'{column}': number of missing values '{missing}' ==> '{portion:.3f}%'")
+
+def process_features(frame):
+    frame = transform_GGGrade(frame)
+    frame = transform_Experience(frame)
+    frame = transform_Validation(frame)
+    frame = transform_Home_Status(frame)
+    frame = remove_Designation(frame)
+    frame = remove_File_Status(frame)
+
+    return frame
         
 
 def main():
@@ -204,6 +214,21 @@ def main():
 
     missing_values_info(frame)
 
+    frame = fill_missing_values(frame)
+    frame = feature_engineering(frame)
+    frame = clean_designation(frame)
+
+    # Select non-numeric columns
+    non_numeric_columns = frame.select_dtypes(exclude=['number'])
+
+    # Print non-numeric columns
+    print("Non-numeric columns:")
+    print(non_numeric_columns)
+
+    # Print the names of the non-numeric columns
+    print("\nNames of non-numeric columns:")
+    print(non_numeric_columns.columns.tolist())
+
     print("Experience column unique values:")
     print(frame['Experience'].unique())
 
@@ -215,16 +240,13 @@ def main():
 
     print("Designation column unique values:")
     print(frame['Designation'].unique().size)
-    
-    frame = fill_missing_values(frame)
-    frame = feature_engineering(frame)
-    frame = clean_designation(frame)
-    frame = transform_GGGrade(frame)
-    frame = transform_Experience(frame)
-    frame = transform_Validation(frame)
-    frame = transform_Home_Status(frame)
-    frame = remove_Designation(frame)
-    frame = remove_File_Status(frame)
+
+    frame = process_features(frame)
+
+    #save clean data
+    output_file = 'Dataset/Clean_data.csv'
+    frame.to_csv(output_file, index=False)
+    print(f"Clean data saved to '{output_file}'")
 
     visualize_data(frame)
 
