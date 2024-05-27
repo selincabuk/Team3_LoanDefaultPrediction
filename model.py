@@ -3,11 +3,22 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.cluster import KMeans
 import joblib
 from preprocessing import read_data_file, fill_missing_values, feature_engineering, clean_designation, visualize_data, missing_values_info, process_features
 
 def check_infinite_values(df):
     return df.replace([np.inf, -np.inf], np.nan).dropna()
+
+def customer_segmentation(df, n_clusters=3):
+    # Features for segmentation
+    features = ['Yearly_Income', 'Debt_to_Income', 'Unpaid_2_years', 'Present_Balance']
+    
+    # Applying K-Means algorithm
+    kmeans = KMeans(n_clusters=n_clusters, random_state=0)
+    df['Segment'] = kmeans.fit_predict(df[features])
+    
+    return df
 
 def main():
     try:
@@ -43,6 +54,12 @@ def main():
         print("\nVisualizing data...")
         visualize_data(frame)
         print("Data visualization completed.")
+        
+        print("\nPerforming customer segmentation...")
+        frame = customer_segmentation(frame)
+        print("Customer segmentation completed.")
+        print("Segment distribution:")
+        print(frame['Segment'].value_counts())
 
         print("\nHandling categorical variables in new data...")
         categorical_columns = frame.select_dtypes(include=['object']).columns
