@@ -5,6 +5,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.cluster import KMeans
 import joblib
+import matplotlib.pyplot as plt
+import seaborn as sns
 from preprocessing import read_data_file, fill_missing_values, feature_engineering, clean_designation, visualize_data, missing_values_info, process_features
 
 def check_infinite_values(df):
@@ -19,6 +21,15 @@ def customer_segmentation(df, n_clusters=3):
     df['Segment'] = kmeans.fit_predict(df[features])
     
     return df
+
+def plot_matrix(cm):
+    # Plot the confusion matrix
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title('Confusion Matrix')
+    plt.show()
 
 def main():
     try:
@@ -104,6 +115,7 @@ def main():
         print("Accuracy:", accuracy_score(y_test, y_pred))
         print("Confusion Matrix:")
         print(confusion_matrix(y_test, y_pred))
+        plot_matrix(confusion_matrix(y_test,y_pred))
         print("Classification Report:")
         print(classification_report(y_test, y_pred))
 
