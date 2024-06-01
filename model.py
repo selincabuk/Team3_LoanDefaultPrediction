@@ -3,13 +3,35 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.cluster import KMeans
 import joblib
+import matplotlib.pyplot as plt
+import seaborn as sns
 from preprocessing import read_data_file, fill_missing_values, feature_engineering, clean_designation, visualize_data, missing_values_info, process_features
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 def check_infinite_values(df):
     return df.replace([np.inf, -np.inf], np.nan).dropna()
+
+def customer_segmentation(df, n_clusters=3):
+    # Features for segmentation
+    features = ['Yearly_Income', 'Debt_to_Income', 'Unpaid_2_years', 'Present_Balance']
+    
+    # Applying K-Means algorithm
+    kmeans = KMeans(n_clusters=n_clusters, random_state=0)
+    df['Segment'] = kmeans.fit_predict(df[features])
+    
+    return df
+
+def plot_matrix(cm):
+    # Plot the confusion matrix
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title('Confusion Matrix')
+    plt.show()
 
 def main():
     try:
@@ -45,6 +67,12 @@ def main():
         print("\nVisualizing data...")
         visualize_data(frame)
         print("Data visualization completed.")
+        
+        print("\nPerforming customer segmentation...")
+        frame = customer_segmentation(frame)
+        print("Customer segmentation completed.")
+        print("Segment distribution:")
+        print(frame['Segment'].value_counts())
 
         print("\nHandling categorical variables in new data...")
         categorical_columns = frame.select_dtypes(include=['object']).columns
@@ -89,6 +117,7 @@ def main():
         print("Accuracy:", accuracy_score(y_test, y_pred))
         print("Confusion Matrix:")
         print(confusion_matrix(y_test, y_pred))
+        plot_matrix(confusion_matrix(y_test,y_pred))
         print("Classification Report:")
         print(classification_report(y_test, y_pred))
 
