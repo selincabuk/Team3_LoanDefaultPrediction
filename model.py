@@ -5,6 +5,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 import joblib
 from preprocessing import read_data_file, fill_missing_values, feature_engineering, clean_designation, visualize_data, missing_values_info, process_features
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 def check_infinite_values(df):
     return df.replace([np.inf, -np.inf], np.nan).dropna()
@@ -96,9 +98,33 @@ def main():
         model_features = list(features.columns)
         joblib.dump(model_features, 'model_features.pkl')
         print("Model features saved as 'model_features.pkl'")
+        # After making predictions and evaluating the model
+        # Visualize accuracy
+        plt.figure(figsize=(8, 6))
+        sns.barplot(x=['Accuracy'], y=[accuracy_score(y_test, y_pred)])
+        plt.title('Model Accuracy')
+        plt.ylim(0, 1)
+        plt.ylabel('Accuracy')
+        plt.show()
+
+        # Visualize confusion matrix
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, cmap='Blues', fmt='g')
+        plt.title('Confusion Matrix')
+        plt.xlabel('Predicted Labels')
+        plt.ylabel('True Labels')
+        plt.show()
+
+        # Visualize classification report
+        report = classification_report(y_test, y_pred, output_dict=True)
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(pd.DataFrame(report).iloc[:-1, :].T, annot=True, cmap='viridis')
+        plt.title('Classification Report')
+        plt.show()
 
     except Exception as e:
         print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
+    
